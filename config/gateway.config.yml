@@ -1,0 +1,208 @@
+http:
+  port: 5005
+
+admin:
+  port: 9876
+  host: localhost
+
+apiEndpoints:
+  accommodations-public:
+    path: /api/accommodations
+    methods: GET
+
+  accommodations-protected-get:
+    path: /api/accommodations/user/*
+    methods: GET
+
+  accommodations-post:
+    path: /api/accommodations
+    methods: POST
+
+  accommodations-put:
+    path: /api/accommodations/:id
+    methods: PUT
+
+  accommodations-delete:
+    path: /api/accommodations/:id
+    methods: DELETE
+
+  transactions-create-post:
+    path: /api/transactions
+    methods: POST
+
+  transactions-accommodation-get:
+    path: /api/transactions/accommodation/*
+    methods: GET
+
+  transactions-user-get:
+    path: /api/transactions/user/*
+    methods: GET
+
+  transactions-delete:
+    path: /api/transactions/:id
+    methods: DELETE
+
+serviceEndpoints:
+  accommodation-service:
+    url: ${NEXT_PUBLIC_ACCOMMODATION_API_URL}
+
+  transaction-service:
+    url: ${NEXT_PUBLIC_TRANSACTION_API_URL}
+
+policies:
+  - cors
+  - log
+  - proxy
+  - rate-limit
+
+pipelines:
+  accommodations-public-pipeline:
+    apiEndpoints:
+      - accommodations-public
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "GET"
+      - rate-limit:
+          - action:
+              max: 300
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: accommodation-service
+              changeOrigin: true
+
+  accommodations-protected-get-pipeline:
+    apiEndpoints:
+      - accommodations-protected-get
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "GET"
+      - rate-limit:
+          - action:
+              max: 300
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: accommodation-service
+              changeOrigin: true
+  accommodations-post-pipeline:
+    apiEndpoints:
+      - accommodations-post
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "POST"
+              allowedHeaders:
+                - "Authorization"
+                - "Content-Type"
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: accommodation-service
+              changeOrigin: true
+
+  accommodations-put-pipeline:
+    apiEndpoints:
+      - accommodations-put
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "PUT"
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: accommodation-service
+              changeOrigin: true
+  accommodations-delete-pipeline:
+    apiEndpoints:
+      - accommodations-delete
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "DELETE"
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: accommodation-service
+              changeOrigin: true
+
+  transactions-create-pipeline:
+    apiEndpoints:
+      - transactions-create-post
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "POST"
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: transaction-service
+              changeOrigin: true
+  transactions-accommodation-pipeline:
+    apiEndpoints:
+      - transactions-accommodation-get
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "GET"
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: transaction-service
+              changeOrigin: true
+  transactions-user-pipeline:
+    apiEndpoints:
+      - transactions-user-get
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "GET"
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: transaction-service
+              changeOrigin: true
+  transactions-delete-pipeline:
+    apiEndpoints:
+      - transactions-delete
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "DELETE"
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: transaction-service
+              changeOrigin: true
