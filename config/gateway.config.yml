@@ -10,37 +10,46 @@ apiEndpoints:
     path: /api/accommodations
     methods: GET
 
-  accommodations-protected-get:
-    path: /api/accommodations/user/*
+  accommodations-id-get:
+    path: /api/accommodations/:id
     methods: GET
 
+  accommodations-user-get:
+    path: /api/accommodations/user/:id
+    methods: ["GET", "OPTIONS"]
+
   accommodations-post:
+    host: "*"
     path: /api/accommodations
-    methods: POST
+    methods: ["POST", "OPTIONS"]
 
   accommodations-put:
     path: /api/accommodations/:id
-    methods: PUT
+    methods: ["PUT", "OPTIONS"]
 
   accommodations-delete:
     path: /api/accommodations/:id
-    methods: DELETE
+    methods: ["DELETE", "OPTIONS"]
 
   transactions-create-post:
     path: /api/transactions
-    methods: POST
+    methods: ["POST", "OPTIONS"]
 
   transactions-accommodation-get:
     path: /api/transactions/accommodation/*
+    methods: ["GET", "OPTIONS"]
+
+  transactions-count-get:
+    path: /api/transactions/count/accommodation/:id
     methods: GET
 
   transactions-user-get:
     path: /api/transactions/user/*
-    methods: GET
+    methods: ["GET", "OPTIONS"]
 
   transactions-delete:
     path: /api/transactions/:id
-    methods: DELETE
+    methods: ["DELETE", "OPTIONS"]
 
 serviceEndpoints:
   accommodation-service:
@@ -54,6 +63,7 @@ policies:
   - log
   - proxy
   - rate-limit
+  - request-transformer
 
 pipelines:
   accommodations-public-pipeline:
@@ -73,9 +83,25 @@ pipelines:
               serviceEndpoint: accommodation-service
               changeOrigin: true
 
-  accommodations-protected-get-pipeline:
+  accommodations-user-get-pipeline:
     apiEndpoints:
-      - accommodations-protected-get
+      - accommodations-user-get
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "GET"
+      - rate-limit:
+          - action:
+              max: 300
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: accommodation-service
+              changeOrigin: true
+  accommodations-id-get-pipeline:
+    apiEndpoints:
+      - accommodations-id-get
     policies:
       - cors:
           - action:
@@ -95,11 +121,35 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "*"
-              methods: "POST"
+              origin: "http://localhost:3000"
+              credentials: true
+              methods: POST,OPTIONS
               allowedHeaders:
-                - "Authorization"
-                - "Content-Type"
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              exposedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              preflightContinue: false
+              optionsSuccessStatus: 204
+      - log:
+          - action:
+              message: "📥 Requête reçue: ${req.method} ${req.url} - Content-Type: ${req.headers['content-type']}"
+
       - rate-limit:
           - action:
               max: 30
@@ -115,8 +165,31 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "*"
-              methods: "PUT"
+              origin: "http://localhost:3000"
+              credentials: true
+              methods: PUT,OPTIONS
+              allowedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              exposedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              preflightContinue: false
+              optionsSuccessStatus: 204
       - rate-limit:
           - action:
               max: 30
@@ -131,8 +204,31 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "*"
-              methods: "DELETE"
+              origin: "http://localhost:3000"
+              credentials: true
+              methods: DELETE,OPTIONS
+              allowedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              exposedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              preflightContinue: false
+              optionsSuccessStatus: 204
       - rate-limit:
           - action:
               max: 30
@@ -148,8 +244,31 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "*"
-              methods: "POST"
+              origin: "http://localhost:3000"
+              credentials: true
+              methods: POST,OPTIONS
+              allowedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              exposedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              preflightContinue: false
+              optionsSuccessStatus: 204
       - rate-limit:
           - action:
               max: 30
@@ -164,8 +283,47 @@ pipelines:
     policies:
       - cors:
           - action:
+              origin: "http://localhost:3000"
+              credentials: true
+              methods: GET,OPTIONS
+              allowedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              exposedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              preflightContinue: false
+              optionsSuccessStatus: 204
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: transaction-service
+              changeOrigin: true
+  transactions-count-pipeline:
+    apiEndpoints:
+      - transactions-count-get
+    policies:
+      - cors:
+          - action:
               origin: "*"
-              methods: "GET"
+              methods: GET
       - rate-limit:
           - action:
               max: 30
@@ -180,8 +338,31 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "*"
-              methods: "GET"
+              origin: "http://localhost:3000"
+              credentials: true
+              methods: GET,OPTIONS
+              allowedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              exposedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              preflightContinue: false
+              optionsSuccessStatus: 204
       - rate-limit:
           - action:
               max: 30
@@ -196,8 +377,31 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "*"
-              methods: "DELETE"
+              origin: "http://localhost:3000"
+              credentials: true
+              methods: DELETE,OPTIONS
+              allowedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              exposedHeaders:
+                [
+                  "Content-type",
+                  "Authorization",
+                  "Origin",
+                  "Access-Control-Allow-Origin",
+                  "Accept",
+                  "Options",
+                  "X-Requested-With",
+                ]
+              preflightContinue: false
+              optionsSuccessStatus: 204
       - rate-limit:
           - action:
               max: 30
