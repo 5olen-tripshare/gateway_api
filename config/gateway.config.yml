@@ -15,6 +15,7 @@ apiEndpoints:
   recommendations-interests-post:
     path: /interests/:id
     methods: POST
+
   accommodations-public:
     path: /api/accommodations
     methods: GET
@@ -23,8 +24,16 @@ apiEndpoints:
     path: /api/accommodations/:id
     methods: GET
 
+  accommodations-search-get:
+    path: /api/accommodations/search
+    methods: GET
+
+  transactions-filter-get:
+    path: /api/transactions/filter
+    methods: GET
+
   accommodations-user-get:
-    path: /api/accommodations/user/:id
+    path: /api/accommodations/user
     methods: ["GET", "OPTIONS"]
 
   accommodations-post:
@@ -44,16 +53,20 @@ apiEndpoints:
     path: /api/transactions
     methods: ["POST", "OPTIONS"]
 
+  transactions-check-post:
+    path: /api/transactions/check
+    methods: ["POST", "OPTIONS"]
+
   transactions-accommodation-get:
     path: /api/transactions/accommodation/*
     methods: ["GET", "OPTIONS"]
 
-  transactions-count-get:
-    path: /api/transactions/count/accommodation/:id
-    methods: GET
+  transactions-count-post:
+    path: /api/transactions/count/accommodation
+    methods: ["POST", "OPTIONS"]
 
   transactions-user-get:
-    path: /api/transactions/user/*
+    path: /api/transactions/user
     methods: ["GET", "OPTIONS"]
 
   transactions-delete:
@@ -143,14 +156,56 @@ pipelines:
               serviceEndpoint: accommodation-service
               changeOrigin: true
 
-  accommodations-user-get-pipeline:
+  accommodations-search-pipeline:
     apiEndpoints:
-      - accommodations-user-get
+      - accommodations-search-get
     policies:
       - cors:
           - action:
               origin: "*"
               methods: "GET"
+      - rate-limit:
+          - action:
+              max: 300
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: accommodation-service
+              changeOrigin: true
+  transactions-filter-pipeline:
+    apiEndpoints:
+      - transactions-filter-get
+    policies:
+      - cors:
+          - action:
+              origin: "*"
+              methods: "GET"
+      - rate-limit:
+          - action:
+              max: 300
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: transaction-service
+              changeOrigin: true
+  accommodations-user-get-pipeline:
+    apiEndpoints:
+      - accommodations-user-get
+    policies:
+      - log:
+          - action:
+              message: "Requête reçue: ${req.method} ${req.url} - Content-Type: ${req.headers['content-type']}"
+      - cors:
+          - action:
+              origin: ["http://localhost:3000", "https://doubli.fr"]
+              credentials: true
+              methods: GET,OPTIONS
+              allowedHeaders:
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
+              preflightContinue: false
+              optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 300
@@ -181,34 +236,18 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "http://localhost:3000"
+              origin: ["http://localhost:3000", "https://doubli.fr"]
               credentials: true
               methods: POST,OPTIONS
               allowedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
-              exposedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
               preflightContinue: false
               optionsSuccessStatus: 204
+              maxAge: 3600
       - log:
           - action:
-              message: "📥 Requête reçue: ${req.method} ${req.url} - Content-Type: ${req.headers['content-type']}"
+              message: "Requête reçue: ${req.method} ${req.url} - Content-Type: ${req.headers['content-type']}"
 
       - rate-limit:
           - action:
@@ -225,31 +264,15 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "http://localhost:3000"
+              origin: ["http://localhost:3000", "https://doubli.fr"]
               credentials: true
               methods: PUT,OPTIONS
               allowedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
-              exposedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
               preflightContinue: false
               optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 30
@@ -264,31 +287,15 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "http://localhost:3000"
+              origin: ["http://localhost:3000", "https://doubli.fr"]
               credentials: true
               methods: DELETE,OPTIONS
               allowedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
-              exposedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
               preflightContinue: false
               optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 30
@@ -304,31 +311,38 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "http://localhost:3000"
+              origin: ["http://localhost:3000", "https://doubli.fr"]
               credentials: true
               methods: POST,OPTIONS
               allowedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
-              exposedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
               preflightContinue: false
               optionsSuccessStatus: 204
+              maxAge: 3600
+      - rate-limit:
+          - action:
+              max: 30
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: transaction-service
+              changeOrigin: true
+  transactions-check-pipeline:
+    apiEndpoints:
+      - transactions-check-post
+    policies:
+      - cors:
+          - action:
+              origin: ["http://localhost:3000", "https://doubli.fr"]
+              credentials: true
+              methods: POST,OPTIONS
+              allowedHeaders:
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
+              preflightContinue: false
+              optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 30
@@ -343,31 +357,15 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "http://localhost:3000"
+              origin: ["http://localhost:3000", "https://doubli.fr"]
               credentials: true
               methods: GET,OPTIONS
               allowedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
-              exposedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
               preflightContinue: false
               optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 30
@@ -378,12 +376,16 @@ pipelines:
               changeOrigin: true
   transactions-count-pipeline:
     apiEndpoints:
-      - transactions-count-get
+      - transactions-count-post
     policies:
       - cors:
           - action:
-              origin: "*"
-              methods: GET
+              origin: ["http://localhost:3000", "https://doubli.fr"]
+              methods: POST,OPTIONS
+              allowedHeaders: ["Content-Type", "Authorization"]
+              preflightContinue: false
+              optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 30
@@ -398,31 +400,15 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "http://localhost:3000"
+              origin: ["http://localhost:3000", "https://doubli.fr"]
               credentials: true
               methods: GET,OPTIONS
               allowedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
-              exposedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
               preflightContinue: false
               optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 30
@@ -437,31 +423,15 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "http://localhost:3000"
+              origin: ["http://localhost:3000", "https://doubli.fr"]
               credentials: true
               methods: DELETE,OPTIONS
               allowedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
-              exposedHeaders:
-                [
-                  "Content-type",
-                  "Authorization",
-                  "Origin",
-                  "Access-Control-Allow-Origin",
-                  "Accept",
-                  "Options",
-                  "X-Requested-With",
-                ]
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
               preflightContinue: false
               optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 30
