@@ -14,4 +14,4 @@ RUN chmod -R 777 /app
 
 EXPOSE 5005
 
-CMD ["eg", "gateway", "start"]
+CMD ["npm", "start"]
