@@ -14,7 +14,7 @@ apiEndpoints:
     methods: GET
   recommendations-interests-post:
     path: /interests/:id
-    methods: POST
+    methods: ["POST", "OPTIONS"]
 
   accommodations-public:
     path: /api/accommodations
@@ -129,8 +129,15 @@ pipelines:
     policies:
       - cors:
           - action:
-              origin: "*"
-              methods: "POST"
+              origin: ["http://localhost:3000", "https://doubli.fr"]
+              credentials: true
+              methods: GET,OPTIONS
+              allowedHeaders:
+                ["Content-Type", "Authorization", "Origin", "Accept"]
+              exposedHeaders: ["Content-Type"]
+              preflightContinue: false
+              optionsSuccessStatus: 204
+              maxAge: 3600
       - rate-limit:
           - action:
               max: 300
